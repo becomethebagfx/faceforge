@@ -1,0 +1,94 @@
+version: '3.8'
+
+services:
+  # FastAPI Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - ./models:/app/models
+      - uploads:/app/uploads
+      - outputs:/app/outputs
+    environment:
+      - ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY}
+      - MODELS_PATH=/app/models
+      - UPLOAD_PATH=/app/uploads
+      - OUTPUT_PATH=/app/outputs
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  # Next.js Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+
+  # Redis for job queue
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  # Celery Worker for background jobs
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: celery -A workers.celery_app worker --loglevel=info
+    volumes:
+      - ./backend:/app
+      - ./models:/app/models
+      - uploads:/app/uploads
+      - outputs:/app/outputs
+    environment:
+      - ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY}
+      - MODELS_PATH=/app/models
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+      - backend
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  # Nginx reverse proxy (optional for production)
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
+      - backend
+    profiles:
+      - production
+
+volumes:
+  uploads:
+  outputs:
+  redis_data:

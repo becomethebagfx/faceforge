@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Build outputs
+.next/
+dist/
+build/
+*.egg-info/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+coverage/
+
+# Models (large files)
+models/*.onnx
+models/*.pth
+models/*.pt
+
+# Logs
+*.log
+logs/
+
+# Temp files
+tmp/
+temp/
+*.tmp
+
+# Uploads directory (runtime artifacts)
+backend/uploads/
