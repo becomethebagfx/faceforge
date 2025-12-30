@@ -59,6 +59,7 @@ Build FaceForge - AI-powered face swapping web application with dual modes (Uplo
 -
 
 ## Working Set
+- Git: Initialized, initial commit 5a5867b
 - Files: /Users/bjwet/faceforge/
 - Commands:
   - Backend: cd /Users/bjwet/faceforge/backend && pip install -r requirements.txt && uvicorn api.main:app --reload
